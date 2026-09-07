@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff3038"/>
+      <stop offset="55%" stop-color="#b40020"/>
+      <stop offset="100%" stop-color="#25000d"/>
+    </linearGradient>
+    <linearGradient id="badge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ff3038"/>
+      <stop offset="100%" stop-color="#c5001d"/>
+    </linearGradient>
+    <linearGradient id="pencil" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff3b43"/>
+      <stop offset="100%" stop-color="#8d0018"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-opacity=".28"/>
+    </filter>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="22"/>
+    </filter>
+  </defs>
+
+  <!-- App icon background -->
+  <rect x="38" y="38" width="948" height="948" rx="190" fill="url(#bg)"/>
+
+  <!-- Decorative highlights -->
+  <path d="M65 700 C210 520 360 500 530 600 C700 700 820 600 950 410 L950 900 C760 1010 260 1010 65 900 Z"
+        fill="#ff1f35" opacity=".18"/>
+  <path d="M80 180 C260 55 500 55 700 125 C820 168 885 235 950 300 L950 90 L80 90 Z"
+        fill="#ff4b4f" opacity=".14"/>
+
+  <!-- Document -->
+  <g filter="url(#shadow)">
+    <path d="M292 168
+             Q292 132 328 132
+             H650
+             L790 272
+             V720
+             Q790 758 752 758
+             H328
+             Q292 758 292 720 Z"
+          fill="#ffffff"/>
+
+    <!-- Fold -->
+    <path d="M650 132 V232 Q650 272 690 272 H790 Z"
+          fill="#eeeeee"/>
+    <path d="M650 132 L790 272 H690 Q650 272 650 232 Z"
+          fill="#fafafa"/>
+  </g>
+
+  <!-- PDF badge -->
+  <g filter="url(#shadow)">
+    <rect x="205" y="260" width="570" height="190" rx="38" fill="url(#badge)"/>
+    <text x="490" y="390"
+          text-anchor="middle"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="128"
+          font-weight="800"
+          fill="#ffffff">PDF</text>
+  </g>
+
+  <!-- Document text lines -->
+  <rect x="350" y="505" width="330" height="24" rx="12" fill="#9aa0aa"/>
+  <rect x="350" y="560" width="275" height="24" rx="12" fill="#aeb3bb"/>
+  <rect x="350" y="615" width="190" height="24" rx="12" fill="#c0c4ca"/>
+
+  <!-- Pencil -->
+  <g transform="rotate(-42 700 610)" filter="url(#shadow)">
+    <rect x="640" y="465" width="90" height="300" rx="22" fill="url(#pencil)"/>
+    <rect x="640" y="465" width="90" height="58" rx="22" fill="#ff3038"/>
+    <rect x="640" y="510" width="90" height="18" fill="#ffffff"/>
+    <path d="M640 765 L685 825 L730 765 Z" fill="#f3c4b5"/>
+    <path d="M669 803 L685 825 L701 803 Z" fill="#16181d"/>
+  </g>
+
+  <!-- Editing stroke -->
+  <path d="M390 690 C465 640 525 730 600 685 C645 658 675 660 710 640"
+        fill="none" stroke="#c90024" stroke-width="18" stroke-linecap="round"/>
+
+  <!-- Brand name -->
+  <text x="512" y="860"
+        text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="82"
+        font-weight="800"
+        fill="#ffffff">PDF Editor</text>
+
+  <!-- Underline -->
+  <rect x="430" y="885" width="164" height="10" rx="5" fill="#ff3038"/>
+
+  <!-- Tagline -->
+  <text x="512" y="935"
+        text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="25"
+        letter-spacing="8"
+        fill="#ffffff"
+        opacity=".92">EDIT • CONVERT • MERGE • MORE</text>
+</svg>
