@@ -2,7 +2,7 @@
 
 A modern, browser-based PDF toolkit built with **React, Vite, Tailwind CSS, PDF-Lib, PDF.js, and jsPDF**.
 
-PDFNexus provides a collection of PDF conversion, editing, and utility tools through a clean and user-friendly web interface. The application is designed to process supported files directly in the browser, making common PDF tasks simple and accessible.
+PDF EDITOR provides a collection of PDF conversion, editing, and utility tools through a clean and user-friendly web interface. The application is designed to process supported files directly in the browser, making common PDF tasks simple and accessible.
 
 ---
 
