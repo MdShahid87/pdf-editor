@@ -1,4 +1,4 @@
-# PDFEDITOR
+# PDF EDITOR
 
 A modern, browser-based PDF toolkit built with **React, Vite, Tailwind CSS, PDF-Lib, PDF.js, and jsPDF**.
 
