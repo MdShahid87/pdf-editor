@@ -1,8 +1,8 @@
-# PDFEDITOR
+# PDF EDITOR
 
 A modern, browser-based PDF toolkit built with **React, Vite, Tailwind CSS, PDF-Lib, PDF.js, and jsPDF**.
 
-PDFNexus provides a collection of PDF conversion, editing, and utility tools through a clean and user-friendly web interface. The application is designed to process supported files directly in the browser, making common PDF tasks simple and accessible.
+PDF EDITOR provides a collection of PDF conversion, editing, and utility tools through a clean and user-friendly web interface. The application is designed to process supported files directly in the browser, making common PDF tasks simple and accessible.
 
 ---
 
@@ -246,7 +246,7 @@ npm run lint
 
 ## 🔧 PDF Processing Architecture
 
-PDFNexus uses a client-side processing architecture for supported operations.
+PDF Editor uses a client-side processing architecture for supported operations.
 
 The main PDF operations are organized inside:
 
@@ -359,17 +359,9 @@ Potential improvements include:
 
 ## 🔐 Privacy
 
-PDFNexus is designed around browser-based file processing for supported operations.
+PDF Editor  is designed around browser-based file processing for supported operations.
 
 Files should be processed locally whenever the selected operation supports client-side processing. Users should still review the application's implementation and deployment configuration before making specific privacy or security claims.
-
----
-
-## 📄 License
-
-This project does not currently specify a license.
-
-If you plan to publish or distribute PDFNexus, add an appropriate license such as MIT, Apache-2.0, or another license that matches your intended usage.
 
 ---
 
