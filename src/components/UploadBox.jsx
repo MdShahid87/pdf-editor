@@ -28,7 +28,7 @@ const UploadBox = ({
 
     // Allow selecting the same file again
     event.target.value = "";
-  }
+  };
   const handleDrop = (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -39,10 +39,9 @@ const UploadBox = ({
 
   return (
     <div
-      className={`rounded-xl border-2 border-dashed p-6 text-center transition ${dragging
-        ? "border-red-500 bg-red-50"
-        : "border-slate-300 bg-slate-50"
-        }`}
+      className={`rounded-xl border-2 border-dashed p-6 text-center transition ${
+        dragging ? "border-red-500 bg-red-50" : "border-slate-300 bg-slate-50"
+      }`}
       onDragOver={(event) => {
         event.preventDefault();
         setDragging(true);
@@ -52,14 +51,11 @@ const UploadBox = ({
       }}
       onDrop={handleDrop}
     >
-      <h3 className="text-lg font-semibold text-slate-800">
-        {title}
-      </h3>
+      <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
 
       <p className="mt-2 text-sm text-slate-500">
-        Drag and drop{" "}
-        {multiple ? "files" : "a file"}{" "}
-        here, or choose from your device.
+        Drag and drop {multiple ? "files" : "a file"} here, or choose from your
+        device.
       </p>
 
       <input

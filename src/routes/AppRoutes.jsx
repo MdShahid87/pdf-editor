@@ -16,7 +16,7 @@ const AppRoutes = () => {
       <Route path="/edit-pdf" element={<CategoryPage />} />
       <Route path="/tools" element={<CategoryPage />} />
       <Route path="/blog" element={<Blog />} />
-      <Route path="/blog" element={<BlogPost />} />
+      <Route path="/blog/:slug" element={<BlogPost />} />
       <Route path="/contact-us" element={<ContactUs />} />
       <Route path="/convert-to-pdf/:tool" element={<ToolPage />} />
       <Route path="/convert-from-pdf/:tool" element={<ToolPage />} />

@@ -3,10 +3,11 @@ const ToolCard = ({ tool }) => {
   return (
     <Link
       to={tool.path}
-      className={`group rounded-xl border bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md ${tool.featured
-        ? "border-red-300 ring-1 ring-red-100"
-        : "border-slate-200"
-        }`}
+      className={`group rounded-xl border bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md ${
+        tool.featured
+          ? "border-red-300 ring-1 ring-red-100"
+          : "border-slate-200"
+      }`}
     >
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-sm font-semibold text-slate-800 sm:text-base">
