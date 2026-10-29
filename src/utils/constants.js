@@ -41,7 +41,11 @@ export const smartTools = [
 //Categories array
 export const categories = [
   { title: "Convert To PDF", slug: "convert-to-pdf", tools: convertToPdfTools },
-  { title: "Convert From PDF", slug: "convert-from-pdf", tools: convertFromPdfTools },
+  {
+    title: "Convert From PDF",
+    slug: "convert-from-pdf",
+    tools: convertFromPdfTools,
+  },
   { title: "Edit PDF Features", slug: "edit-pdf", tools: editPdfTools },
   { title: "Popular PDF Tools", slug: "tools", tools: smartTools },
 ];
