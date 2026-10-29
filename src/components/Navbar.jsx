@@ -22,7 +22,7 @@ const convertGroups = [
 ];
 
 const linkClass = ({ isActive }) =>
-  `flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
+  `flex min-w-0 items-center rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
     isActive
       ? "bg-red-50 text-red-600"
       : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
@@ -38,14 +38,14 @@ const Navbar = () => {
 
   const location = useLocation();
 
-  // Close menus whenever the route changes.
+  // Close menus after navigating to another page.
   useEffect(() => {
     setIsMobileOpen(false);
     setIsConvertOpen(false);
     setIsMobileConvertOpen(false);
   }, [location.pathname]);
 
-  // Close the desktop dropdown when clicking outside it.
+  // Close menus when the user clicks outside or presses Escape.
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (
@@ -53,6 +53,15 @@ const Navbar = () => {
         !desktopConvertRef.current.contains(event.target)
       ) {
         setIsConvertOpen(false);
+      }
+
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target) &&
+        !event.target.closest("[data-mobile-menu-button]")
+      ) {
+        setIsMobileOpen(false);
+        setIsMobileConvertOpen(false);
       }
     };
 
@@ -79,19 +88,20 @@ const Navbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 shadow-sm backdrop-blur-md">
-      <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur-md">
+      {/* Main navbar */}
+      <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-3 px-3 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link
           to="/"
           aria-label="PDF Editor home"
-          className="group flex shrink-0 items-center gap-2"
+          className="group flex min-w-0 shrink-0 items-center gap-2"
         >
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-600 text-sm font-extrabold text-white shadow-sm transition group-hover:bg-red-700">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-600 text-xs font-extrabold text-white shadow-sm transition-colors group-hover:bg-red-700 sm:h-10 sm:w-10 sm:text-sm">
             PDF
           </span>
 
-          <span className="text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
+          <span className="whitespace-nowrap text-base font-bold tracking-tight text-slate-900 sm:text-xl">
             PDF <span className="text-red-600">Editor</span>
           </span>
         </Link>
@@ -105,14 +115,14 @@ const Navbar = () => {
             Home
           </NavLink>
 
-          {/* Convert PDF dropdown */}
+          {/* Desktop Convert PDF dropdown */}
           <div className="relative" ref={desktopConvertRef}>
             <button
               type="button"
               aria-expanded={isConvertOpen}
               aria-haspopup="true"
-              onClick={() => setIsConvertOpen((prev) => !prev)}
-              className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
+              onClick={() => setIsConvertOpen((previous) => !previous)}
+              className={`flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
                 isConvertOpen
                   ? "bg-red-50 text-red-600"
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
@@ -121,7 +131,7 @@ const Navbar = () => {
               Convert PDF
               <svg
                 aria-hidden="true"
-                className={`h-4 w-4 transition-transform duration-200 ${
+                className={`h-4 w-4 transition-transform ${
                   isConvertOpen ? "rotate-180" : ""
                 }`}
                 viewBox="0 0 20 20"
@@ -136,23 +146,17 @@ const Navbar = () => {
             </button>
 
             {isConvertOpen && (
-              <div className="absolute right-0 top-full z-50 mt-3 w-[min(44rem,calc(100vw-2rem))] rounded-2xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-900/10">
-                <div className="mb-4 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-base font-bold text-slate-900">
-                      PDF Conversion Tools
-                    </h2>
-                    <p className="mt-1 text-xs text-slate-500">
-                      Convert your documents in a few clicks.
-                    </p>
-                  </div>
-
-                  <span className="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600">
-                    PDF Tools
-                  </span>
+              <div className="absolute right-0 top-full z-50 mt-2 max-h-[min(75dvh,38rem)] w-[min(44rem,calc(100vw-2rem))] overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-4 shadow-2xl sm:p-5">
+                <div className="mb-5 border-b border-slate-100 pb-4">
+                  <h2 className="text-base font-bold text-slate-900 sm:text-lg">
+                    PDF Conversion Tools
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Choose the tool you need.
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-5">
                   {convertGroups.map((group) => (
                     <div key={group.title} className="min-w-0">
                       <h3 className="mb-3 border-b border-slate-100 pb-2 text-xs font-bold uppercase tracking-wider text-slate-500">
@@ -165,28 +169,10 @@ const Navbar = () => {
                             key={tool.path}
                             to={tool.path}
                             onClick={() => setIsConvertOpen(false)}
-                            className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 transition hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                            className="flex min-w-0 items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                           >
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition group-hover:bg-white group-hover:text-red-600">
-                              <svg
-                                aria-hidden="true"
-                                className="h-4 w-4"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M7 3.75h7l5 5v11.5a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2v-13a2.5 2.5 0 0 1 2-2.5Z"
-                                />
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M14 3.75v5h5M8.5 13h7M8.5 16.5h7"
-                                />
-                              </svg>
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-slate-500">
+                              PDF
                             </span>
 
                             <span className="min-w-0 break-words font-medium">
@@ -209,15 +195,16 @@ const Navbar = () => {
           ))}
         </nav>
 
-        {/* Mobile and tablet menu button */}
+        {/* Mobile/tablet menu button */}
         <button
+          data-mobile-menu-button
           type="button"
           aria-label={
             isMobileOpen ? "Close navigation menu" : "Open navigation menu"
           }
           aria-expanded={isMobileOpen}
           aria-controls="mobile-navigation"
-          onClick={() => setIsMobileOpen((prev) => !prev)}
+          onClick={() => setIsMobileOpen((previous) => !previous)}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 lg:hidden"
         >
           {isMobileOpen ? (
@@ -259,49 +246,40 @@ const Navbar = () => {
         <div
           id="mobile-navigation"
           ref={mobileMenuRef}
-          className="border-t border-slate-200 bg-white shadow-lg lg:hidden"
+          className="max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-t border-slate-200 bg-white shadow-lg lg:hidden"
         >
           <nav
             aria-label="Mobile navigation"
-            className="mx-auto flex max-h-[calc(100dvh-4rem)] w-full max-w-7xl flex-col gap-1 overflow-y-auto px-4 py-4 sm:px-6"
+            className="mx-auto flex w-full max-w-7xl flex-col gap-1 px-3 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6"
           >
             <NavLink to="/" end className={linkClass} onClick={closeMobileMenu}>
               Home
             </NavLink>
 
-            {/* Mobile conversion accordion */}
-            <div className="overflow-hidden rounded-xl">
+            {/* Mobile Convert PDF accordion */}
+            <div className="min-w-0">
               <button
                 type="button"
                 aria-expanded={isMobileConvertOpen}
-                onClick={() => setIsMobileConvertOpen((prev) => !prev)}
-                className={`flex w-full items-center justify-between rounded-lg px-3 py-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
+                aria-controls="mobile-conversion-tools"
+                onClick={() => setIsMobileConvertOpen((previous) => !previous)}
+                className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
                   isMobileConvertOpen
                     ? "bg-red-50 text-red-600"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                <span className="flex items-center gap-3">
-                  <svg
-                    aria-hidden="true"
-                    className="h-5 w-5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M8 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3M8 4v4h4M8 4l4 4m-1 5h8m-4-4 4 4-4 4"
-                    />
-                  </svg>
-                  Convert PDF
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-100 text-xs font-bold text-red-600">
+                    PDF
+                  </span>
+
+                  <span>Convert PDF</span>
                 </span>
 
                 <svg
                   aria-hidden="true"
-                  className={`h-4 w-4 transition-transform duration-200 ${
+                  className={`h-4 w-4 shrink-0 transition-transform ${
                     isMobileConvertOpen ? "rotate-180" : ""
                   }`}
                   viewBox="0 0 20 20"
@@ -316,9 +294,12 @@ const Navbar = () => {
               </button>
 
               {isMobileConvertOpen && (
-                <div className="mt-1 space-y-4 rounded-xl bg-slate-50 p-3">
+                <div
+                  id="mobile-conversion-tools"
+                  className="mt-2 space-y-5 rounded-2xl bg-slate-50 p-3 sm:p-4"
+                >
                   {convertGroups.map((group) => (
-                    <div key={group.title}>
+                    <section key={group.title} className="min-w-0">
                       <h3 className="mb-2 px-2 text-xs font-bold uppercase tracking-wider text-slate-500">
                         {group.title}
                       </h3>
@@ -329,13 +310,19 @@ const Navbar = () => {
                             key={tool.path}
                             to={tool.path}
                             onClick={closeMobileMenu}
-                            className="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-white hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                            className="flex min-w-0 items-center gap-3 rounded-xl border border-transparent px-3 py-3 text-sm font-medium text-slate-700 transition-colors hover:border-red-100 hover:bg-white hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                           >
-                            {tool.name}
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-[10px] font-bold text-red-600 shadow-sm">
+                              PDF
+                            </span>
+
+                            <span className="min-w-0 break-words">
+                              {tool.name}
+                            </span>
                           </Link>
                         ))}
                       </div>
-                    </div>
+                    </section>
                   ))}
                 </div>
               )}
