@@ -2,42 +2,71 @@ import { PDFDocument, degrees, StandardFonts, rgb } from "pdf-lib";
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import JSZip from "jszip";
-
 // PDF.js worker configuration
 GlobalWorkerOptions.workerSrc = pdfWorker;
-
 // JPG / PNG → PDF
 export async function imagesToPdf(files) {
-  if (!files || files.length === 0) {
+  const imageFiles = Array.from(files || []);
+
+  if (imageFiles.length === 0) {
     throw new Error("Please select at least one JPG or PNG image.");
   }
 
   const pdfDoc = await PDFDocument.create();
+
   const A4_WIDTH = 595.28;
   const A4_HEIGHT = 841.89;
-  const MARGIN = 20;
+  const MARGIN = 24;
 
-  for (const file of files) {
-    if (!["image/jpeg", "image/png"].includes(file.type)) {
-      throw new Error(`${file.name} is not a JPG or PNG image.`);
+  for (const file of imageFiles) {
+    const fileName = (file.name || "").toLowerCase();
+
+    const isJpg =
+      file.type === "image/jpeg" ||
+      fileName.endsWith(".jpg") ||
+      fileName.endsWith(".jpeg");
+
+    const isPng = file.type === "image/png" || fileName.endsWith(".png");
+
+    if (!isJpg && !isPng) {
+      throw new Error(`"${file.name}" is not a supported JPG or PNG image.`);
     }
 
     const imageBytes = await file.arrayBuffer();
+    let image;
 
-    const image =
-      file.type === "image/jpeg"
+    try {
+      image = isJpg
         ? await pdfDoc.embedJpg(imageBytes)
         : await pdfDoc.embedPng(imageBytes);
+    } catch {
+      throw new Error(
+        `Unable to read "${file.name}". Please select a valid JPG or PNG image.`,
+      );
+    }
 
+    const imageDimensions = image.scale(1);
+
+    if (
+      !Number.isFinite(imageDimensions.width) ||
+      !Number.isFinite(imageDimensions.height) ||
+      imageDimensions.width <= 0 ||
+      imageDimensions.height <= 0
+    ) {
+      throw new Error(`Invalid image dimensions: ${file.name}`);
+    }
+
+    // Fit image inside A4 without stretching it.
     const maxWidth = A4_WIDTH - MARGIN * 2;
-
     const maxHeight = A4_HEIGHT - MARGIN * 2;
 
-    const scale = Math.min(maxWidth / image.width, maxHeight / image.height);
+    const scale = Math.min(
+      maxWidth / imageDimensions.width,
+      maxHeight / imageDimensions.height,
+    );
 
-    const drawWidth = image.width * scale;
-
-    const drawHeight = image.height * scale;
+    const drawWidth = imageDimensions.width * scale;
+    const drawHeight = imageDimensions.height * scale;
 
     const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
 
@@ -49,7 +78,7 @@ export async function imagesToPdf(files) {
     });
   }
 
-  return pdfDoc.save();
+  return await pdfDoc.save();
 }
 
 // MERGE PDF
@@ -57,7 +86,9 @@ export const mergePdfs = async (files) => {
   if (!Array.isArray(files) || files.length < 2) {
     throw new Error("Please select at least 2 PDF files to merge.");
   }
+
   const mergedPdf = await PDFDocument.create();
+
   for (const file of files) {
     if (
       file.type !== "application/pdf" &&
@@ -67,16 +98,12 @@ export const mergePdfs = async (files) => {
     }
 
     const fileBytes = await file.arrayBuffer();
-
     const sourcePdf = await PDFDocument.load(fileBytes);
 
     const pageIndices = sourcePdf.getPages().map((_, index) => index);
-
     const copiedPages = await mergedPdf.copyPages(sourcePdf, pageIndices);
 
-    copiedPages.forEach((page) => {
-      mergedPdf.addPage(page);
-    });
+    copiedPages.forEach((page) => mergedPdf.addPage(page));
   }
 
   return await mergedPdf.save();
@@ -84,7 +111,11 @@ export const mergePdfs = async (files) => {
 
 // SPLIT PDF
 export async function splitPdf(file, pageNumbers) {
-  if (!file || file.type !== "application/pdf") {
+  if (
+    !file ||
+    (file.type !== "application/pdf" &&
+      !file.name?.toLowerCase().endsWith(".pdf"))
+  ) {
     throw new Error("Please select a PDF file.");
   }
 
@@ -93,7 +124,6 @@ export async function splitPdf(file, pageNumbers) {
   }
 
   const sourcePdf = await PDFDocument.load(await file.arrayBuffer());
-
   const totalPages = sourcePdf.getPageCount();
 
   const selectedPages = [
@@ -109,19 +139,20 @@ export async function splitPdf(file, pageNumbers) {
   }
 
   const newPdf = await PDFDocument.create();
-
   const copiedPages = await newPdf.copyPages(sourcePdf, selectedPages);
 
-  copiedPages.forEach((page) => {
-    newPdf.addPage(page);
-  });
+  copiedPages.forEach((page) => newPdf.addPage(page));
 
-  return newPdf.save();
+  return await newPdf.save();
 }
 
 // ROTATE PDF
 export async function rotatePdf(file, rotation = 90) {
-  if (!file || file.type !== "application/pdf") {
+  if (
+    !file ||
+    (file.type !== "application/pdf" &&
+      !file.name?.toLowerCase().endsWith(".pdf"))
+  ) {
     throw new Error("Please select a PDF file.");
   }
 
@@ -135,18 +166,21 @@ export async function rotatePdf(file, rotation = 90) {
 
   pdfDoc.getPages().forEach((page) => {
     const currentRotation = page.getRotation().angle;
-
     const newRotation = (currentRotation + Number(rotation)) % 360;
 
     page.setRotation(degrees(newRotation));
   });
 
-  return pdfDoc.save();
+  return await pdfDoc.save();
 }
 
 // DELETE PDF PAGES
 export async function deletePdfPages(file, pageNumbers) {
-  if (!file || file.type !== "application/pdf") {
+  if (
+    !file ||
+    (file.type !== "application/pdf" &&
+      !file.name?.toLowerCase().endsWith(".pdf"))
+  ) {
     throw new Error("Please select a PDF file.");
   }
 
@@ -155,7 +189,6 @@ export async function deletePdfPages(file, pageNumbers) {
   }
 
   const pdfDoc = await PDFDocument.load(await file.arrayBuffer());
-
   const totalPages = pdfDoc.getPageCount();
 
   const pagesToDelete = [
@@ -178,8 +211,9 @@ export async function deletePdfPages(file, pageNumbers) {
     pdfDoc.removePage(pageIndex);
   }
 
-  return pdfDoc.save();
+  return await pdfDoc.save();
 }
+
 // ADD SIGNATURE
 export async function addSignature(
   pdfFile,
@@ -190,7 +224,11 @@ export async function addSignature(
   width = 180,
   height = 70,
 ) {
-  if (!pdfFile || pdfFile.type !== "application/pdf") {
+  if (
+    !pdfFile ||
+    (pdfFile.type !== "application/pdf" &&
+      !pdfFile.name?.toLowerCase().endsWith(".pdf"))
+  ) {
     throw new Error("Please select a PDF file.");
   }
 
@@ -198,17 +236,29 @@ export async function addSignature(
     throw new Error("Please select a signature image.");
   }
 
-  if (!["image/png", "image/jpeg"].includes(signatureFile.type)) {
+  const signatureName = (signatureFile.name || "").toLowerCase();
+
+  const isPng =
+    signatureFile.type === "image/png" || signatureName.endsWith(".png");
+
+  const isJpg =
+    signatureFile.type === "image/jpeg" ||
+    signatureName.endsWith(".jpg") ||
+    signatureName.endsWith(".jpeg");
+
+  if (!isPng && !isJpg) {
     throw new Error("Signature must be PNG or JPG.");
   }
 
   const pdfDoc = await PDFDocument.load(await pdfFile.arrayBuffer());
-
   const pages = pdfDoc.getPages();
-
   const pageIndex = Number(pageNumber) - 1;
 
-  if (pageIndex < 0 || pageIndex >= pages.length) {
+  if (
+    !Number.isInteger(Number(pageNumber)) ||
+    pageIndex < 0 ||
+    pageIndex >= pages.length
+  ) {
     throw new Error(
       `Invalid page number. This PDF has ${pages.length} page(s).`,
     );
@@ -216,10 +266,9 @@ export async function addSignature(
 
   const signatureBytes = await signatureFile.arrayBuffer();
 
-  const signatureImage =
-    signatureFile.type === "image/png"
-      ? await pdfDoc.embedPng(signatureBytes)
-      : await pdfDoc.embedJpg(signatureBytes);
+  const signatureImage = isPng
+    ? await pdfDoc.embedPng(signatureBytes)
+    : await pdfDoc.embedJpg(signatureBytes);
 
   pages[pageIndex].drawImage(signatureImage, {
     x,
@@ -228,11 +277,10 @@ export async function addSignature(
     height,
   });
 
-  return pdfDoc.save();
+  return await pdfDoc.save();
 }
 
-// EDIT PDF
-// Adds text to selected PDF page
+// EDIT PDF — ADD TEXT
 export async function editPdf(
   file,
   text,
@@ -241,7 +289,11 @@ export async function editPdf(
   y = 700,
   fontSize = 16,
 ) {
-  if (!file || file.type !== "application/pdf") {
+  if (
+    !file ||
+    (file.type !== "application/pdf" &&
+      !file.name?.toLowerCase().endsWith(".pdf"))
+  ) {
     throw new Error("Please select a PDF file.");
   }
 
@@ -250,14 +302,15 @@ export async function editPdf(
   }
 
   const pdfDoc = await PDFDocument.load(await file.arrayBuffer());
-
   const pages = pdfDoc.getPages();
-
   const pageIndex = Number(pageNumber) - 1;
-
   const size = Number(fontSize);
 
-  if (pageIndex < 0 || pageIndex >= pages.length) {
+  if (
+    !Number.isInteger(Number(pageNumber)) ||
+    pageIndex < 0 ||
+    pageIndex >= pages.length
+  ) {
     throw new Error(
       `Invalid page number. This PDF has ${pages.length} page(s).`,
     );
@@ -268,11 +321,9 @@ export async function editPdf(
   }
 
   const page = pages[pageIndex];
-
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
   const maxX = page.getWidth();
-
   const maxY = page.getHeight();
 
   const safeX = Math.max(0, Math.min(Number(x), maxX - 10));
@@ -289,28 +340,27 @@ export async function editPdf(
     maxWidth: Math.max(10, maxX - safeX - 20),
   });
 
-  return pdfDoc.save();
+  return await pdfDoc.save();
 }
-
 // COMPRESS PDF
 export async function compressPdf(file) {
-  if (!file || file.type !== "application/pdf") {
+  if (
+    !file ||
+    (file.type !== "application/pdf" &&
+      !file.name?.toLowerCase().endsWith(".pdf"))
+  ) {
     throw new Error("Please select a PDF file.");
   }
 
   const pdfDoc = await PDFDocument.load(await file.arrayBuffer());
 
-  return pdfDoc.save({
+  return await pdfDoc.save({
     useObjectStreams: true,
     addDefaultPage: false,
     objectsPerTick: 50,
   });
 }
-
-// =========================================================
 // DOWNLOAD PDF
-// =========================================================
-
 export function downloadPdf(pdfBytes, fileName = "output.pdf") {
   if (!pdfBytes) {
     throw new Error("No PDF data available for download.");
@@ -321,16 +371,13 @@ export function downloadPdf(pdfBytes, fileName = "output.pdf") {
   });
 
   const url = URL.createObjectURL(blob);
-
   const link = document.createElement("a");
 
   link.href = url;
   link.download = fileName;
 
   document.body.appendChild(link);
-
   link.click();
-
   link.remove();
 
   setTimeout(() => {
@@ -339,90 +386,92 @@ export function downloadPdf(pdfBytes, fileName = "output.pdf") {
 }
 
 // PDF → JPG
-// Converts every PDF page into a JPG image.
-// Multiple JPG images are returned as a ZIP file.
+// Every PDF page becomes a JPG inside a ZIP file.
 export async function pdfToJpg(file) {
-  if (!file) {
+  if (
+    !file ||
+    (file.type !== "application/pdf" &&
+      !file.name?.toLowerCase().endsWith(".pdf"))
+  ) {
     throw new Error("Please select a PDF file.");
   }
 
-  if (file.type !== "application/pdf") {
-    throw new Error("Please select a PDF file.");
-  }
   const pdfBytes = await file.arrayBuffer();
+
   const loadingTask = getDocument({
     data: pdfBytes,
   });
 
-  const pdf = await loadingTask.promise;
+  let pdf;
 
-  const totalPages = pdf.numPages;
+  try {
+    pdf = await loadingTask.promise;
 
-  if (totalPages === 0) {
-    throw new Error("The PDF does not contain any pages.");
-  }
+    const totalPages = pdf.numPages;
 
-  const zip = new JSZip();
-
-  for (let pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
-    const page = await pdf.getPage(pageNumber);
-
-    // Higher scale = better JPG quality
-    const viewport = page.getViewport({
-      scale: 2,
-    });
-
-    const canvas = document.createElement("canvas");
-
-    const context = canvas.getContext("2d");
-
-    if (!context) {
-      throw new Error("Unable to create canvas.");
+    if (totalPages === 0) {
+      throw new Error("The PDF does not contain any pages.");
     }
 
-    canvas.width = Math.ceil(viewport.width);
+    const zip = new JSZip();
 
-    canvas.height = Math.ceil(viewport.height);
+    for (let pageNumber = 1; pageNumber <= totalPages; pageNumber++) {
+      const page = await pdf.getPage(pageNumber);
 
-    await page.render({
-      canvasContext: context,
-      viewport,
-    }).promise;
+      const viewport = page.getViewport({
+        scale: 2,
+      });
 
-    const jpgBlob = await new Promise((resolve, reject) => {
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            reject(new Error("Unable to convert PDF page to JPG."));
-            return;
-          }
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
 
-          resolve(blob);
-        },
-        "image/jpeg",
-        0.92,
-      );
+      if (!context) {
+        throw new Error("Unable to create canvas.");
+      }
+
+      canvas.width = Math.ceil(viewport.width);
+      canvas.height = Math.ceil(viewport.height);
+
+      try {
+        await page.render({
+          canvasContext: context,
+          viewport,
+        }).promise;
+
+        const jpgBlob = await new Promise((resolve, reject) => {
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error("Unable to convert PDF page to JPG."));
+                return;
+              }
+
+              resolve(blob);
+            },
+            "image/jpeg",
+            0.92,
+          );
+        });
+
+        const imageBytes = await jpgBlob.arrayBuffer();
+
+        zip.file(`page-${pageNumber}.jpg`, imageBytes);
+      } finally {
+        // Release canvas memory.
+        canvas.width = 1;
+        canvas.height = 1;
+      }
+    }
+
+    return await zip.generateAsync({
+      type: "blob",
+      compression: "DEFLATE",
+      compressionOptions: {
+        level: 6,
+      },
+      mimeType: "application/zip",
     });
-
-    const imageBytes = await jpgBlob.arrayBuffer();
-
-    const fileName = `page-${pageNumber}.jpg`;
-
-    zip.file(fileName, imageBytes);
-
-    // Free canvas memory
-    canvas.width = 1;
-    canvas.height = 1;
+  } finally {
+    await loadingTask.destroy();
   }
-  await loadingTask.destroy();
-  const zipBlob = await zip.generateAsync({
-    type: "blob",
-    compression: "DEFLATE",
-    compressionOptions: {
-      level: 6,
-    },
-    mimeType: "application/zip",
-  });
-
-  return zipBlob;
 }
